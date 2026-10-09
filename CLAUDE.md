@@ -66,6 +66,6 @@ Cómo se hace cada una (igual para las tres, cambiando el comando y la hora):
    python3 herramientas/historia-diaria/tarde_noche.py tarde publicar/AAAA-MM-DD-tarde.png AAAA-MM-DD
    python3 herramientas/historia-diaria/tarde_noche.py noche publicar/AAAA-MM-DD-noche.png AAAA-MM-DD
    Después convertir a JPEG 1080x1920 con Pillow, borrar el PNG y el SVG.
-2. Commit y push al branch main. URL: https://raw.githubusercontent.com/fabriscar/Luma-CBA/main/publicar/<archivo>.jpg (verificar 200).
+2. Commit y push al branch main. URL: https://raw.githubusercontent.com/fabriscar/lumacba/main/publicar/<archivo>.jpg (verificar 200).
 3. Windsor: connector `instagram`, account 17841439121158917, action `create_story`, params `{"image_url": "<URL>"}`.
 4. Si algo falla, no insistir ni publicar otra cosa: dejar el archivo en publicar/ y anotar el error en el commit.
