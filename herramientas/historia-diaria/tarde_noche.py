@@ -17,50 +17,23 @@ def T(txt, size, x, y, fill, maxw=920):
     return tline(txt, size, x, y, fill, -0.03, maxw=maxw)[0]
 
 # ---------- TARDE: preguntas para responder ----------
-def t_cual(fecha):
-    s = svg_open(Y) + lines_bg(K, .05)
-    s += tline("luma", 34, 90, 150, K, 0.0, maxw=200)[0]
-    s += T("¿cuál te llevás?", 130, 80, 560, K)
-    x = 60
-    for i, fn in enumerate([s_lampara, s_lamparita, s_gota, s_cubo]):
-        g, w, h = place(fn, x, 800 + (i % 2) * 90, 0.36, [-4, 5, -3, 4][i]); s += g
-        s += tline(str(i + 1), 90, x + 70, 1480, K, 0.0, maxw=120)[0]; x += 250
-    s += tline("respondé con tu número", 62, 90, 1640, K, 0.0, maxw=900)[0]
-    return s + '</svg>'
+def t_pregunta(l1, l2, cierre):
+    def f(fecha):
+        s = svg_open(Y) + lines_bg(K, .05) + tline("luma", 34, 90, 150, K, 0.0, maxw=200)[0]
+        s += T(l1, 112, 80, 520, K)
+        if l2: s += T(l2, 112, 80, 650, K)
+        g, w, h = place(s_lampara, 300, 880, 0.62, -4); s += g
+        s += tline(cierre, 62, 90, 1640, K, 0.0, maxw=900)[0]
+        return s + '</svg>'
+    return f
 
-def t_color(fecha):
-    s = svg_open(Y) + lines_bg(K, .05) + tline("luma", 34, 90, 150, K, 0.0, maxw=200)[0]
-    s += T("¿de qué color?", 130, 80, 560, K)
-    for i, (c, lbl) in enumerate([(K, "1"), (CR, "2"), ("#FFFFFF", "3")]):
-        cx = 200 + i * 340
-        s += f'<circle cx="{cx}" cy="950" r="130" fill="{c}" stroke="{WH}" stroke-width="16"/>'
-        s += tline(lbl, 90, cx - 28, 1180, K, 0.0, maxw=120)[0]
-    s += tline("respondé con tu número", 62, 90, 1640, K, 0.0, maxw=900)[0]
-    return s + '</svg>'
+# Preguntas generales: se responden sin mirar nada en la imagen.
+t_rincon = t_pregunta("¿en qué rincón te falta", "poner una lámpara?", "contanos cuál")
+t_color = t_pregunta("¿de qué color te gusta", "la luz de la lámpara?", "respondé con un mensaje")
+t_luz = t_pregunta("¿luz cálida o", "luz blanca?", "contanos cuál preferís")
+t_donde = t_pregunta("¿dónde tenés tu", "lámpara favorita?", "contanos dónde está")
 
-def t_si_no(fecha):
-    s = svg_open(Y) + lines_bg(K, .05) + tline("luma", 34, 90, 150, K, 0.0, maxw=200)[0]
-    s += T("¿la querés?", 150, 80, 620, K)
-    s += T("1 · sí", 110, 90, 900, K)
-    s += T("2 · todavía no", 110, 90, 1060, K)
-    s += tline("respondé con el número", 62, 90, 1640, K, 0.0, maxw=900)[0]
-    return s + '</svg>'
-
-def t_rincon(fecha):
-    s = svg_open(Y) + lines_bg(K, .05) + tline("luma", 34, 90, 150, K, 0.0, maxw=200)[0]
-    s += T("¿qué rincón", 130, 80, 560, K) + T("te falta?", 130, 80, 720, K)
-    g, w, h = place(s_lampara, 300, 880, 0.62, -4); s += g
-    s += tline("contanos cuál", 62, 90, 1640, K, 0.0, maxw=900)[0]
-    return s + '</svg>'
-
-def t_prendida(fecha):
-    s = svg_open(Y) + lines_bg(K, .05) + tline("luma", 34, 90, 150, K, 0.0, maxw=200)[0]
-    s += T("¿prendida o", 130, 80, 560, K) + T("apagada?", 130, 80, 720, K)
-    g, w, h = place(s_lampara, 300, 880, 0.62, -4); s += g
-    s += tline("1 prendida · 2 apagada", 62, 90, 1640, K, 0.0, maxw=900)[0]
-    return s + '</svg>'
-
-TARDE = [t_cual, t_color, t_rincon, t_prendida]
+TARDE = [t_rincon, t_color, t_luz, t_donde]
 
 # ---------- NOCHE: ambiente de cierre del día ----------
 def n_base(fecha, lamp=True):
