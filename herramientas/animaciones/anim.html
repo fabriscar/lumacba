@@ -1,0 +1,78 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:B;src:url('../fonts/bric800.ttf');}
+*{margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#0B0B0B}
+#stage{position:absolute;left:0;top:0;width:1080px;height:1920px;overflow:hidden;background:#0B0B0B}
+#wipe{position:absolute;border-radius:50%;background:#FFD60A;left:0;top:0;width:10px;height:10px}
+#lines{position:absolute;inset:0}
+.it{position:absolute;will-change:transform}
+.ltr{position:absolute;display:inline-block;font-family:B;font-size:215px;line-height:1;color:#0B0B0B;white-space:pre;transform-origin:50% 85%}
+</style></head><body><div id="stage">
+<div id="glow" class="it" style="width:900px;height:900px;border-radius:50%;background:radial-gradient(circle,rgba(255,214,10,.55),rgba(255,214,10,0) 65%)"></div>
+<div id="wipe"></div><div id="lines"></div>
+<div id="items"></div><div id="txt"></div>
+<svg id="bsvg" class="it" width="470" height="470" viewBox="-200 -200 400 400"></svg>
+</div>
+<script>
+const Y='#FFD60A',K='#0B0B0B';
+// faint lines
+(function(){let h='';for(let y=0;y<1920;y+=14)h+=`<div style="position:absolute;left:0;top:${y}px;width:1080px;height:3px;background:#fff;opacity:.05"></div>`;document.getElementById('lines').innerHTML=h;})();
+const spr=t=>t<=0?0:1-Math.exp(-8*t)*Math.cos(13*t);
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const ease=x=>1-Math.pow(1-clamp(x,0,1),3);
+// items: img, cx, cy, h, t0, dx, dy, rot0(spin in), idleAmp, idleRot, phase, rest rot
+const ITEMS=[
+ {i:'lampara',cx:280,cy:1140,h:540,t0:0.25,dx:0,dy:-1500,r0:0,ia:0,ir:0,ph:0,rr:-6,drop:1},
+ {i:'luma-badge-negro',cx:240,cy:330,h:150,t0:1.9,dx:-300,dy:0,r0:-40,ia:0,ir:1.5,ph:1,rr:-2},
+ {i:'estrella-luma',cx:610,cy:790,h:210,t0:3.0,dx:900,dy:-300,r0:360,ia:10,ir:8,ph:0.5,rr:10},
+ {i:'lamparita',cx:850,cy:790,h:250,t0:3.25,dx:700,dy:200,r0:-200,ia:12,ir:5,ph:2,rr:8},
+ {i:'cubo-3d',cx:935,cy:365,h:170,t0:3.5,dx:600,dy:-700,r0:300,ia:12,ir:7,ph:3,rr:-10},
+ {i:'chispas',cx:565,cy:905,h:150,t0:3.7,dx:-300,dy:0,r0:-120,ia:8,ir:6,ph:4,rr:0},
+ {i:'gota',cx:985,cy:1410,h:150,t0:4.2,dx:500,dy:300,r0:200,ia:10,ir:6,ph:5,rr:12},
+ {i:'pedilo-en-la-web',cx:520,cy:1470,h:215,t0:5.0,dx:0,dy:600,r0:0,ia:0,ir:0,ph:0,rr:-2,pulse:1},
+];
+const root=document.getElementById('items');
+ITEMS.forEach(o=>{const im=new Image();im.src='stk/png/'+o.i+'.png';im.className='it';im.style.height=o.h+'px';root.appendChild(im);o.el=im;
+ o.w=null;im.onload=()=>{o.w=o.h*im.naturalWidth/im.naturalHeight;im.style.left=(o.cx-o.w/2)+'px';im.style.top=(o.cy-o.h/2)+'px'};});
+// letters
+const L1='regalale',L2='luz.';
+const txt=document.getElementById('txt');const LET=[];
+function mk(str,top,t0){let x=80;const c=document.createElement('canvas').getContext('2d');c.font='215px B';
+ [...str].forEach((ch,i)=>{const s=document.createElement('span');s.className='ltr';s.textContent=ch;s.style.left=x+'px';s.style.top=top+'px';txt.appendChild(s);
+  const w=c.measureText(ch).width-215*0.005;LET.push({el:s,t0:t0+i*0.06});x+=w;});}
+document.fonts.load('215px B').then(()=>{mk(L1,435,2.1);mk(L2,645,2.65);window.fontsReady=true;});
+// burst
+const bs=document.getElementById('bsvg');
+(function(){const n=18,R1=170,R2=142;let p=[];for(let i=0;i<n*2;i++){const r=i%2?R2:R1,a=Math.PI*i/n-Math.PI/2;p.push((r*Math.cos(a)).toFixed(1)+','+(r*Math.sin(a)).toFixed(1));}
+ bs.innerHTML=`<polygon points="${p.join(' ')}" fill="${K}" stroke="${K}" stroke-width="14" stroke-linejoin="round"/><text x="0" y="-8" text-anchor="middle" font-family="B" font-size="58" fill="${Y}">Día de la</text><text x="0" y="52" text-anchor="middle" font-family="B" font-size="72" fill="${Y}">Madre</text>`;
+ bs.style.left="555px";bs.style.top='930px';})();
+const wipe=document.getElementById('wipe'),glow=document.getElementById('glow');
+const WX=250,WY=1000;
+function render(t){
+ // wipe
+ const wt=ease((t-1.35)/0.75);const R=wt*2500;
+ wipe.style.left=(WX-R)+'px';wipe.style.top=(WY-R)+'px';wipe.style.width=(2*R)+'px';wipe.style.height=(2*R)+'px';
+ // lines color flip
+ document.getElementById('lines').style.opacity=1;
+ document.getElementById('lines').style.mixBlendMode='difference';
+ // glow
+ const g=t<1.35?(0.2+0.8*ease((t-0.9)/0.45)):1-ease((t-1.5)/0.6);
+ glow.style.left=(WX-450)+'px';glow.style.top=(WY-450)+'px';glow.style.opacity=clamp(g,0,1)*(0.85+0.15*Math.sin(t*14));
+ glow.style.display=(t<0.9)?'none':'block';
+ ITEMS.forEach(o=>{if(!o.w)return;const tt=(t-o.t0)/ (o.drop?0.9:0.7);const s=spr(tt);
+  let sc=o.drop?1:clamp(s,0,1.3);let dx=o.dx*(1-s),dy=o.dy*(1-s);
+  if(tt<=0){o.el.style.opacity=0;return}o.el.style.opacity=1;
+  const idle=tt>1?1:0;const ph=t*2.2+o.ph;
+  dy+=Math.sin(ph)*o.ia*(idle?1:clamp(tt,0,1));
+  let rot=o.rr+o.r0*(1-s)+Math.sin(ph*0.9)*o.ir;
+  if(o.pulse&&t>5.9)sc*=1+0.035*Math.sin((t-5.9)*5);
+  if(o.drop&&t>1.25&&t<1.6){sc*=1+0.06*Math.sin((t-1.25)*Math.PI/0.35)}
+  o.el.style.transform=`translate(${dx}px,${dy}px) rotate(${rot}deg) scale(${sc})`;});
+ LET.forEach(l=>{const tt=(t-l.t0)/0.55;const s=spr(tt);l.el.style.opacity=clamp(tt*5,0,1);
+  l.el.style.transform=`translateY(${(1-s)*150}px) scale(${clamp(s,0,1.2)}) rotate(${(1-s)*-12}deg)`;});
+ // burst
+ {const tt=(t-4.0)/0.8,s=spr(tt);bs.style.opacity=tt>0?1:0;
+  bs.style.transform=`rotate(${8+(1-s)*-200+Math.sin(t*2.4)*5}deg) scale(${clamp(s,0,1.25)*(1+0.03*Math.sin(t*5))})`;}
+}
+window.render=render;
+</script></body></html>

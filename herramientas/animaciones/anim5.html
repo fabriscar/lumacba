@@ -1,0 +1,126 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:B;src:url('../fonts/bric800.ttf');}
+*{margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#0B0B0B}
+#stage{position:absolute;left:0;top:0;width:1080px;height:1920px;overflow:hidden;background:#0B0B0B}
+.sc{position:absolute;inset:0;overflow:hidden}
+.lines div{position:absolute;left:0;width:1080px;height:3px}
+.it{position:absolute;left:0;top:0;will-change:transform}
+.ltr{position:absolute;font-family:B;line-height:1;white-space:pre}
+.tx{position:absolute;font-family:B;line-height:1;white-space:pre;left:0;width:1080px;text-align:center}
+.lamp{position:absolute;left:0;top:0;transform-origin:50% 100%;will-change:transform}
+.lamp img{position:absolute;left:0;top:0;width:100%;height:100%}
+</style></head><body><div id="stage"></div>
+<script>
+const Y='#FFD60A',K='#0B0B0B',CR='#FFF1B8';
+const spr=t=>t<=0?0:1-Math.exp(-8*t)*Math.cos(13*t);
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const ease=x=>1-Math.pow(1-clamp(x,0,1),3);
+const stage=document.getElementById('stage');
+const meas=document.createElement('canvas').getContext('2d');
+function tw(str,size){meas.font=size+'px B';return meas.measureText(str).width;}
+const T1=1.0,T2=5.2,T3=8.8,T4=11.2,TOTAL=14.2;
+const AR=601/963; // lamp w/h
+const LQ=[];
+function letters(sc,str,size,top,color,tl,cx=540,maxw=940,gap=0.03){LQ.push([sc,str,size,top,color,tl,cx,maxw,gap]);}
+function letters_(sc,str,size,top,color,tl,cx,maxw,gap){let s=size;const w0=tw(str,s);if(w0>maxw)s=s*maxw/w0;let x=cx-tw(str,s)/2;
+ [...str].forEach((ch,i)=>{const e=document.createElement('div');e.className='ltr';e.textContent=ch;e.style.fontSize=s+'px';e.style.color=color;e.style.left=x+'px';e.style.top=(top+(size-s)*0.45)+'px';e.style.transformOrigin='50% 85%';sc.el.appendChild(e);sc.let.push({el:e,t0:tl+i*gap,i});x+=tw(ch,s)-s*0.004;});}
+function img(parent,h,src){const im=new Image();im.src=src;im.className='it';im.style.height=h+'px';parent.appendChild(im);const o={el:im,h,w:h};im.addEventListener('load',()=>{o.w=h*im.naturalWidth/im.naturalHeight;});return o;}
+function mkScene(bg,lc,lo,z){const el=document.createElement('div');el.className='sc';el.style.background=bg;el.style.zIndex=z;let L='';for(let y=0;y<1920;y+=14)L+=`<div style="top:${y}px;background:${lc};opacity:${lo}"></div>`;const ln=document.createElement('div');ln.className='lines';ln.innerHTML=L;el.appendChild(ln);stage.appendChild(el);return {el,let:[]};}
+function txt(sc,s,size,top,color,extra=''){const d=document.createElement('div');d.className='tx';d.textContent=s;d.style.cssText+=`font-size:${size}px;top:${top}px;color:${color};${extra}`;sc.el.appendChild(d);return d;}
+function mkLamp(parent,h){const d=document.createElement('div');d.className='lamp';const w=h*AR;d.style.width=w+'px';d.style.height=h+'px';
+ d.innerHTML='<img class="o" src="anim5/lamp_outline.png"><img class="c" src="anim5/lamp_core.png">';parent.appendChild(d);return {el:d,o:d.querySelector('.o'),c:d.querySelector('.c'),w,h};}
+function setLamp(L,cx,feet,dy,rot,sx,sy,sc=1){L.el.style.transform=`translate(${cx-L.w/2}px,${feet-L.h+dy}px) rotate(${rot}rad) scale(${sx*sc},${sy*sc})`;}
+function hop(t,period,height,sign=1){const q=((t%period)+period)%period/period;let dy=0,sx=1,sy=1,rot=0;
+ if(q<0.68){const k=Math.sin(Math.PI*q/0.68);dy=-k*height;rot=sign*k*0.1*(Math.floor(t/period)%2?1:-1);sy=1+0.06*k;sx=1-0.04*k;}
+ else{const k=Math.sin(Math.PI*(q-0.68)/0.32);sy=1-0.13*k;sx=1+0.1*k;}
+ return {dy,sx,sy,rot};}
+function burstSvg(l1,l2,l3,fill=K,tc=Y,tc3='#fff'){const n=18,R1=170,R2=142;let p=[];for(let i=0;i<n*2;i++){const r=i%2?R2:R1,a=Math.PI*i/n-Math.PI/2;p.push((r*Math.cos(a)).toFixed(1)+','+(r*Math.sin(a)).toFixed(1));}
+ const s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('width',420);s.setAttribute('height',420);s.setAttribute('viewBox','-200 -200 400 400');s.setAttribute('class','it');
+ s.innerHTML=`<polygon points="${p.join(' ')}" fill="${fill}" stroke="${fill}" stroke-width="14" stroke-linejoin="round"/><text x="0" y="-22" text-anchor="middle" font-family="B" font-size="64" fill="${tc}">${l1}</text><text x="0" y="46" text-anchor="middle" font-family="B" font-size="84" fill="${tc}">${l2}</text>${l3?`<text x="0" y="104" text-anchor="middle" font-family="B" font-size="52" fill="${tc3}">${l3}</text>`:''}`;return s;}
+// ---- SCENE 0 (black, lamp off)
+const S0=mkScene(K,'#fff',.05,1);S0.t0=0;
+letters(S0,'¿la prendemos?',170,330,'#ffffff',-0.3,540,940,0.02);
+S0.lamp=mkLamp(S0.el,1000);
+// ---- SCENE 1 (yellow, lamp dancing)
+const S1=mkScene(Y,K,.06,2);S1.t0=T1;
+S1.glow=document.createElement('div');S1.glow.className='it';S1.glow.style.cssText='width:1300px;height:1300px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.75),rgba(255,255,255,0) 62%)';S1.el.appendChild(S1.glow);
+letters(S1,'así se ve',145,385,K,0.9,540,940,0.03);letters(S1,'prendida.',145,525,K,1.15,540,940,0.03);
+S1.lamp=mkLamp(S1.el,820);
+S1.burst=burstSvg('impreso','en 3D');S1.el.appendChild(S1.burst);S1.burst.style.zIndex=1;S1.lamp.el.style.zIndex=2;
+S1.st=[img(S1.el,170,'stk/png/estrella-luma.png'),img(S1.el,150,'stk/png/chispas.png'),img(S1.el,130,'stk/png/lamparita.png')];
+// ---- SCENE 2 (black, three lamps)
+const S2=mkScene(K,'#fff',.05,3);S2.t0=T2;
+letters(S2,'para cada',150,385,'#ffffff',0.3,540,940,0.03);letters(S2,'rincón.',150,525,Y,0.55,540,940,0.03);
+S2.lamps=[0,1,2].map(i=>{const l=mkLamp(S2.el,[520,620,520][i]);l.i=i;return l;});
+S2.glows=[0,1,2].map(i=>{const g=document.createElement('div');g.className='it';g.style.cssText='width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(255,214,10,.45),rgba(255,214,10,0) 65%)';S2.el.appendChild(g);return g;});
+S2.st=[img(S2.el,160,'stk/png/estrella-luma.png'),img(S2.el,140,'stk/png/chispas.png')];
+// ---- SCENE 3 (yellow, texture zoom)
+const S3=mkScene(Y,K,.06,4);S3.t0=T3;
+letters(S3,'mirá el',150,385,K,0.2,540,940,0.03);letters(S3,'detalle',150,525,K,0.4,540,940,0.03);
+S3.pan=document.createElement('div');S3.pan.className='it';S3.pan.style.cssText="left:90px;top:760px;width:900px;height:740px;border-radius:56px;border:16px solid #0B0B0B;box-shadow:0 0 0 14px #fff;overflow:hidden;background:#0B0B0B";
+S3.tx=document.createElement('div');S3.tx.style.cssText="position:absolute;left:0;top:0;width:900px;height:760px;background:url(anim5/tex.png) center/cover;transform-origin:50% 50%";S3.pan.appendChild(S3.tx);S3.el.appendChild(S3.pan);
+S3.cpc=img(S3.el,150,'stk/png/capa-por-capa.png');S3.sp=img(S3.el,170,'stk/png/chispas.png');
+// ---- SCENE 4 (CTA)
+const S4=mkScene(Y,K,.06,5);S4.t0=T4;
+letters(S4,'regalale',200,385,K,0.2,540,900,0.03);letters(S4,'luz.',200,590,K,0.5,540,900,0.03);
+S4.lamp=mkLamp(S4.el,600);
+S4.burst=burstSvg('Día de la','Madre','18/10');S4.el.appendChild(S4.burst);
+S4.pill=img(S4.el,175,'stk/png/pedilo-en-la-web.png');S4.sp=img(S4.el,150,'stk/png/estrella-luma.png');
+const badge=img(stage,150,'stk/png/luma-badge-negro.png');badge.el.style.zIndex=100;
+document.fonts.load('100px B').then(()=>{LQ.forEach(a=>letters_(...a));window.fontsReady=true;});
+function lets(S,t){S.let.forEach(l=>{const tt=(t-S.t0-l.t0)/0.35;const sp=spr(tt);l.el.style.opacity=clamp(tt*6,0,1);l.el.style.transform=`translateY(${(1-sp)*130+Math.sin(t*6+l.i*.7)*5*clamp(tt-1,0,1)}px) scale(${clamp(sp,0,1.25)}) rotate(${(1-sp)*-8}deg)`;});}
+function wipe(S,t,ox,oy,dur=0.55){const tl=t-S.t0;S.el.style.display=tl>0?'block':'none';S.el.style.clipPath=tl>=dur+0.05?'none':`circle(${ease(tl/dur)*2600}px at ${ox}px ${oy}px)`;}
+function render(t){
+ // S0 lines use absolute time; letters t0 relative to S.t0 => S0.t0=0
+ lets(S0,t);
+ {// lamp off, subtle breathing; flicker on at 0.85
+  const L=S0.lamp;const bob=Math.sin(t*3)*4;setLamp(L,540,1580,bob,0,1,1);
+  const tOn=0.85;let on=0;if(t>tOn){on=(t<tOn+0.1)?1:(t<tOn+0.2?0.2:1);}
+  L.c.style.filter=`brightness(${0.4+0.78*on}) saturate(${0.5+0.6*on})`;L.o.style.opacity=on>0.5?1:0.0;
+  // flash
+  }
+ // S1
+ wipe(S1,t,540,1080,0.6);
+ {const tl=t-T1;lets(S1,t);const L=S1.lamp;
+  // start at same pose as S0 then shrink to dance size
+  const k=ease((tl-0.4)/0.6);const hS=820;const cx=540+Math.sin(Math.max(0,tl-1.2)*1.4)*120*clamp(tl-1.2,0,1);
+  let feet=1580-30*k;let dy=0,sx=1,sy=1,rot=0;
+  if(tl>1.2){const h=hop(tl-1.2,0.8,150);dy=h.dy;sx=h.sx;sy=h.sy;rot=h.rot;}
+  // scale from 1000->900 at start (S0 lamp is 1000 high; S1 lamp 900)
+  const sc=1000/820*(1-k)+k;
+  setLamp(L,cx,feet,dy,rot,sx,sy,sc);L.c.style.filter=`brightness(${1.12+0.05*Math.sin(t*10)}) saturate(1.1)`;L.o.style.opacity=1;
+  const g=S1.glow;g.style.opacity=clamp(tl*2,0,1)*(0.85+0.15*Math.sin(t*9));g.style.transform=`translate(${cx-650}px,${feet-520+dy*0.3}px) scale(${1+0.04*Math.sin(t*5)})`;
+  const tb=(tl-1.5)/0.7,sp=spr(tb);S1.burst.style.opacity=tb>0?1:0;S1.burst.style.transform=`translate(${850-210}px,${1200-210}px) rotate(${10+(1-sp)*-220+Math.sin(t*2.4)*6}deg) scale(${clamp(sp,0,1.25)})`;
+  S1.st.forEach((o,j)=>{const tt=(tl-1.2-j*0.25)/0.5,sp=spr(tt);o.el.style.opacity=tt>0?1:0;const P=[[200,780],[900,640],[160,1250]][j];const a=t*(j%2?-1.1:1.1)+j;
+   o.el.style.transform=`translate(${P[0]-o.h/2+Math.cos(a)*22}px,${P[1]-o.h/2+Math.sin(a)*22}px) rotate(${(1-sp)*260+Math.sin(t*3+j)*12+t*(j%2?-30:30)}deg) scale(${clamp(sp,0,1.25)})`;});
+ }
+ // S2
+ wipe(S2,t,1080,300,0.5);
+ {const tl=t-T2;lets(S2,t);const xs=[170,540,910],feet=[1480,1500,1480],hs=[0.75,0.55,0.9];
+  S2.lamps.forEach((L,i)=>{const tt=(tl-0.5-i*0.18)/0.7,sp=spr(tt);const ent=clamp(sp,0,1.15);
+   let dy=(1-sp)*-1200,sx=1,sy=1,rot=0;if(tl>1.3+i*0.2){const h=hop(tl-1.3-i*0.2+ i*0.0,0.8,110+i*0);dy+=h.dy;sx=h.sx;sy=h.sy;rot=h.rot*(i===1?-1:1);}
+   L.el.style.opacity=tt>0?1:0;setLamp(L,xs[i],feet[i],dy,rot,sx,sy);L.c.style.filter=`brightness(${1.1+0.05*Math.sin(t*9+i)}) saturate(1.1)`;L.o.style.opacity=1;
+   const g=S2.glows[i];g.style.opacity=tt>0?clamp(tt,0,1)*(0.85+0.15*Math.sin(t*8+i)):0;g.style.transform=`translate(${xs[i]-350}px,${feet[i]-L.h*0.6-350}px)`;});
+  S2.st.forEach((o,j)=>{const tt=(tl-1.0-j*0.2)/0.5,sp=spr(tt);o.el.style.opacity=tt>0?1:0;const P=[[900,1700*0+860],[170,900]][j];const a=t*1.3+j*2;
+   o.el.style.transform=`translate(${P[0]-o.h/2+Math.cos(a)*18}px,${P[1]-o.h/2+Math.sin(a)*18}px) rotate(${(1-sp)*260+t*(j?-35:35)}deg) scale(${clamp(sp,0,1.25)})`;});
+ }
+ // S3
+ wipe(S3,t,540,1100,0.5);
+ {const tl=t-T3;lets(S3,t);const e=ease(tl/0.6);S3.pan.style.opacity=clamp(tl*4,0,1);S3.pan.style.transform=`translateY(${(1-spr(tl/0.6))*500}px) rotate(${(1-spr(tl/0.6))*-4}deg)`;
+  const z=1.05+tl*0.17;S3.tx.style.transform=`scale(${z}) translate(${-tl*10}px,${-tl*6}px)`;
+  const tt=(tl-0.9)/0.6,sp=spr(tt);S3.cpc.el.style.opacity=tt>0?1:0;S3.cpc.el.style.transform=`translate(${520-S3.cpc.w/2}px,${1560-S3.cpc.h/2+(1-sp)*300}px) rotate(-5deg) scale(${clamp(sp,0,1.1)})`;
+  const t2=(tl-1.1)/0.5,s2=spr(t2);S3.sp.el.style.opacity=t2>0?1:0;S3.sp.el.style.transform=`translate(${900-85}px,${700-85+Math.sin(t*3)*10}px) rotate(${(1-s2)*260+t*30}deg) scale(${clamp(s2,0,1.2)})`;}
+ // S4
+ wipe(S4,t,540,960,0.5);
+ {const tl=t-T4;lets(S4,t);const L=S4.lamp;const tt=(tl-0.3)/0.7,sp=spr(tt);
+  let dy=(1-sp)*-1300,sx=1,sy=1,rot=0;if(tl>1.2){const h=hop(tl-1.2,0.8,100);dy+=h.dy;sx=h.sx;sy=h.sy;rot=h.rot;}
+  L.el.style.opacity=tt>0?1:0;setLamp(L,200,1560,dy,rot,sx,sy);L.c.style.filter='brightness(1.12) saturate(1.1)';L.o.style.opacity=1;
+  const tb=(tl-0.9)/0.7,sb=spr(tb);S4.burst.style.opacity=tb>0?1:0;S4.burst.style.transform=`translate(${800-210}px,${1060-210}px) rotate(${8+(1-sb)*-200+Math.sin(t*2.4)*5}deg) scale(${clamp(sb,0,1.25)*(1+0.03*Math.sin(t*5))})`;
+  const tp=(tl-1.5)/0.7,spp=spr(tp);S4.pill.el.style.opacity=tp>0?1:0;S4.pill.el.style.transform=`translate(${650-S4.pill.w/2}px,${1480-S4.pill.h/2+(1-spp)*600}px) rotate(-2deg) scale(${1+0.04*Math.sin(Math.max(0,tl-2.2)*6)})`;
+  const ts=(tl-1.2)/0.5,ss=spr(ts);S4.sp.el.style.opacity=ts>0?1:0;S4.sp.el.style.transform=`translate(${880-75}px,${760-75+Math.sin(t*3)*10}px) rotate(${(1-ss)*260+t*30}deg) scale(${clamp(ss,0,1.2)})`;}
+ badge.el.style.opacity=t>=T1+0.5?1:0;badge.el.style.transform=`translate(${70}px,${250}px) scale(.8)`;badge.el.style.transformOrigin='0 0';
+ // hide badge during S0 and in S1/S2 where text starts at y300: keep badge only from S3 onward? place it small at top-left
+}
+window.render=render;
+</script></body></html>
