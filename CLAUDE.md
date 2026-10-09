@@ -50,3 +50,13 @@ El dueño quiere despertarse y ver una historia nueva ya publicada. Cada día:
 3. Dejar al dueño un resumen de una línea: qué se publicó y a qué hora.
 - No inventar precios, descuentos, stock ni plazos de entrega. Si hace falta un dato, preguntárselo al dueño o no mencionarlo.
 - Si algo falla (URL, permisos, Windsor), no insistir: dejar la imagen lista en publicar/ y avisar en una línea qué falló.
+
+## Historia diaria automática (orden del dueño, vigente)
+Todos los días a las 8:00 (hora de Argentina) se publica UNA historia en @3dluma.cba. El dueño dio autorización permanente para esta historia diaria, así que no hace falta pedirle confirmación cada vez. Solo aplica a esta historia; cualquier otra publicación (feed, Reels, respuestas) sí requiere su confirmación.
+Formato fijo: fondo amarillo, logo Luma arriba, "buen <día de la semana>" grande en negro, una lámpara dibujada (estilo sticker), y una frase corta del día abajo. Sin links, sin precios, sin promociones, sin texto raro.
+Cómo se hace:
+1. Generar: `python3 herramientas/historia-diaria/diaria.py <día en minúscula> publicar/AAAA-MM-DD-buen-<día>.png` (después convertir a JPEG con Pillow, 1080x1920).
+2. Commit y push al branch main. URL: https://raw.githubusercontent.com/<usuario>/<repo>/main/publicar/AAAA-MM-DD-buen-<día>.jpg (verificar que responda 200).
+3. Windsor: connector `instagram`, action `create_story`, params `{"image_url": "<URL>"}`.
+4. Si algo falla, no insistir: dejar el archivo en publicar/ y anotar el error en el commit.
+Los días en español: lunes, martes, miércoles, jueves, viernes, sábado, domingo.
