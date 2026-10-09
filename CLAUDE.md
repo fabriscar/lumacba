@@ -51,12 +51,21 @@ El dueño quiere despertarse y ver una historia nueva ya publicada. Cada día:
 - No inventar precios, descuentos, stock ni plazos de entrega. Si hace falta un dato, preguntárselo al dueño o no mencionarlo.
 - Si algo falla (URL, permisos, Windsor), no insistir: dejar la imagen lista en publicar/ y avisar en una línea qué falló.
 
-## Historia diaria automática (orden del dueño, vigente)
-Todos los días a las 8:00 (hora de Argentina) se publica UNA historia en @3dluma.cba. El dueño dio autorización permanente para esta historia diaria, así que no hace falta pedirle confirmación cada vez. Solo aplica a esta historia; cualquier otra publicación (feed, Reels, respuestas) sí requiere su confirmación.
-Formato fijo: fondo amarillo, logo Luma arriba, "buen <día de la semana>" grande en negro, una lámpara dibujada (estilo sticker), y una frase corta del día abajo. Sin links, sin precios, sin promociones, sin texto raro.
-Cómo se hace:
-1. Generar: `python3 herramientas/historia-diaria/diaria.py <día en minúscula> publicar/AAAA-MM-DD-buen-<día>.png` (después convertir a JPEG con Pillow, 1080x1920).
-2. Commit y push al branch main. URL: https://raw.githubusercontent.com/<usuario>/<repo>/main/publicar/AAAA-MM-DD-buen-<día>.jpg (verificar que responda 200).
-3. Windsor: connector `instagram`, action `create_story`, params `{"image_url": "<URL>"}`.
-4. Si algo falla, no insistir: dejar el archivo en publicar/ y anotar el error en el commit.
-Los días en español: lunes, martes, miércoles, jueves, viernes, sábado, domingo.
+## Historias diarias automáticas (orden del dueño, vigente)
+Cada día se publican TRES historias en @3dluma.cba, todas con autorización permanente del dueño (no pedir confirmación). Solo aplica a estas historias; cualquier otra publicación (feed, Reels, respuestas, comentarios) sí requiere su confirmación.
+
+1. 8:00 (hora Argentina): "buen <día>". Script: herramientas/historia-diaria/diaria.py. Ej.: buen viernes, buen sábado. Diseño: fondo amarillo, lámpara con estrella, frase corta abajo, "luma" chiquito arriba.
+2. 15:04: historia para que respondan (cambia cada día). Script: herramientas/historia-diaria/tarde_noche.py tarde. Son 5 variantes que rotan: "¿cuál te llevás?", "¿de qué color?", "¿la querés?", "¿qué rincón te falta?", "¿prendida o apagada?".
+3. 20:17: historia de ambiente de noche (cambia cada día). Script: herramientas/historia-diaria/tarde_noche.py noche. Son 5 variantes: "ya es de noche. ¿la prendés?", "fin del día.", "apagá la luz grande.", "buenas noches.", "luz cálida para cerrar el día.".
+
+Formato común: fondo amarillo (mañana y tarde) o negro con brillo amarillo (noche), "luma" chiquito arriba, texto grande y una línea de respuesta abajo. Nada de links, precios, promociones, ni "lámparas 3D".
+
+Cómo se hace cada una (igual para las tres, cambiando el comando y la hora):
+1. Generar el PNG con el script. Ejemplos desde la raíz del repo:
+   python3 herramientas/historia-diaria/diaria.py publicar/AAAA-MM-DD-manana.png AAAA-MM-DD
+   python3 herramientas/historia-diaria/tarde_noche.py tarde publicar/AAAA-MM-DD-tarde.png AAAA-MM-DD
+   python3 herramientas/historia-diaria/tarde_noche.py noche publicar/AAAA-MM-DD-noche.png AAAA-MM-DD
+   Después convertir a JPEG 1080x1920 con Pillow, borrar el PNG y el SVG.
+2. Commit y push al branch main. URL: https://raw.githubusercontent.com/fabriscar/Luma-CBA/main/publicar/<archivo>.jpg (verificar 200).
+3. Windsor: connector `instagram`, account 17841439121158917, action `create_story`, params `{"image_url": "<URL>"}`.
+4. Si algo falla, no insistir ni publicar otra cosa: dejar el archivo en publicar/ y anotar el error en el commit.
