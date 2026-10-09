@@ -60,7 +60,7 @@ def t_prendida(fecha):
     s += tline("1 prendida · 2 apagada", 62, 90, 1640, K, 0.0, maxw=900)[0]
     return s + '</svg>'
 
-TARDE = [t_cual, t_color, t_si_no, t_rincon, t_prendida]
+TARDE = [t_cual, t_color, t_rincon, t_prendida]
 
 # ---------- NOCHE: ambiente de cierre del día ----------
 def n_base(fecha, lamp=True):
