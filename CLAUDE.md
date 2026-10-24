@@ -52,7 +52,7 @@ El dueño quiere despertarse y ver una historia nueva ya publicada. Cada día:
 - Si algo falla (URL, permisos, Windsor), no insistir: dejar la imagen lista en publicar/ y avisar en una línea qué falló.
 
 ## Historias diarias automáticas (orden del dueño, vigente)
-Cada día se publican TRES historias en @3dluma.cba, todas con autorización permanente del dueño (no pedir confirmación). Solo aplica a estas historias; cualquier otra publicación (feed, Reels, respuestas, comentarios) sí requiere su confirmación.
+Cada día se publican DOS historias en @3dluma.cba (la de la mañana y la de la noche), con autorización permanente del dueño (no pedir confirmación). La historia de la tarde (15:04) YA NO se publica: el dueño lo decidió el 24-oct-2026 y la tarea programada de la tarde está desactivada. Solo aplica a estas historias; cualquier otra publicación (feed, Reels, respuestas, comentarios) sí requiere su confirmación.
 
 1. 8:00 (hora Argentina): "buen <día>". Script: herramientas/historia-diaria/diaria.py. Ej.: buen viernes, buen sábado. Diseño: fondo amarillo, lámpara con estrella, frase corta abajo, "luma" chiquito arriba.
 2. 15:04: historia para que respondan (cambia cada día). Script: herramientas/historia-diaria/tarde_noche.py tarde. Son 4 variantes que rotan, todas preguntas generales que se responden sin mirar nada en la imagen: "¿en qué rincón te falta poner una lámpara?", "¿de qué color te gusta la luz de la lámpara?", "¿luz cálida o luz blanca?", "¿dónde tenés tu lámpara favorita?". Nunca preguntas que dependan de elegir algo de la imagen (números, opciones, "¿la querés?").
